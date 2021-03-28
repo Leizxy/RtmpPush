@@ -26,6 +26,11 @@ RTMPPacket *createVideoPackage(Live *live);
 
 RTMPPacket *createVideoPackage(jbyte *string, jint i, jlong i1, Live *ptr);
 
+int sendAudio(jbyte *data, jint len, jlong tms, jint type);
+
+///---------
+
+RTMPPacket *createAudioPacket(jbyte *data, jint len, jint type, jlong tms, Live *live);
 
 void prepareVideo(jbyte *data, jint len, Live *live) {
     for (int i = 0; i < len; ++i) {
@@ -137,23 +142,26 @@ int sendPacket(RTMPPacket *packet) {
     return r;
 }
 
-int sendVideo(jbyte *data, jint len, jlong tms) {
-    int ret;
-    if (data[4] == 0x67) {// sps pps
-        if (live && (!live->pps || !live->sps)) {
-            prepareVideo(data, len, live);
-        }
+RTMPPacket *createAudioPacket(jbyte *data, jint len, jint type, jlong tms, Live *live) {
+    int body_size = len + 2;
+    RTMPPacket *packet = static_cast<RTMPPacket *>(malloc(sizeof(RTMPPacket)));
+    RTMPPacket_Alloc(packet, body_size);
+    //音频头
+    packet->m_body[0] = 0xAF;
+    if (type == 1) {
+        packet->m_body[1] = 0x00;
     } else {
-        if (data[4] == 0x65) {// I 帧
-            RTMPPacket *packet = createVideoPackage(live);
-            if (!(ret = sendPacket(packet))) {
-
-            }
-        }
-        RTMPPacket *packet = createVideoPackage(data, len, tms, live);
-        ret = sendPacket(packet);
+        packet->m_body[1] = 0x01;
     }
-    return ret;
+    memcpy(&packet->m_body[2], data, len);
+    packet->m_packetType = RTMP_PACKET_TYPE_AUDIO;
+    packet->m_nChannel = 0x05;
+    packet->m_nBodySize = body_size;
+    packet->m_nTimeStamp = tms;
+    packet->m_hasAbsTimestamp = 0;
+    packet->m_headerType = RTMP_PACKET_SIZE_LARGE;
+    packet->m_nInfoField2 = live->rtmp->m_stream_id;
+    return packet;
 }
 
 extern "C"
@@ -182,7 +190,34 @@ Java_cn_leizy_rtmpdemo_ScreenLive_connect(JNIEnv *env, jobject thiz, jstring url
     }
     env->ReleaseStringUTFChars(url_, url);
     return ret;
-}extern "C"
+}
+
+int sendVideo(jbyte *data, jint len, jlong tms) {
+    int ret;
+    if (data[4] == 0x67) {// sps pps
+        if (live && (!live->pps || !live->sps)) {
+            prepareVideo(data, len, live);
+        }
+    } else {
+        if (data[4] == 0x65) {// I 帧
+            RTMPPacket *packet = createVideoPackage(live);
+            if (!(ret = sendPacket(packet))) {
+
+            }
+        }
+        RTMPPacket *packet = createVideoPackage(data, len, tms, live);
+        ret = sendPacket(packet);
+    }
+    return ret;
+}
+
+int sendAudio(jbyte *data, jint len, jlong tms, jint type) {
+    RTMPPacket *packet = createAudioPacket(data, len, type, tms, live);
+    int ret = sendPacket(packet);
+    return ret;
+}
+
+extern "C"
 JNIEXPORT jboolean JNICALL
 Java_cn_leizy_rtmpdemo_ScreenLive_sendData(JNIEnv *env, jobject thiz, jbyteArray data_, jint len,
                                            jlong tms, jint type) {
@@ -192,8 +227,8 @@ Java_cn_leizy_rtmpdemo_ScreenLive_sendData(JNIEnv *env, jobject thiz, jbyteArray
         case 0:
             ret = sendVideo(data, len, tms);
             break;
-        case 1:
-
+        default:
+            ret = sendAudio(data, len, tms, type);
             break;
     }
     env->ReleaseByteArrayElements(data_, data, 0);

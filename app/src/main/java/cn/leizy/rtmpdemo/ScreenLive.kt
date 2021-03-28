@@ -40,6 +40,8 @@ class ScreenLive : Thread() {
         }
         val videoCodec = VideoCodec(this)
         videoCodec.startLive(mediaProjection)
+        val audioCodec = AudioCodec(this)
+        audioCodec.startLive()
         isLiving = true
         while (isLiving) {
             var rtmpPackage: RTMPPackage? = null
@@ -50,8 +52,8 @@ class ScreenLive : Thread() {
             }
             rtmpPackage?.apply {
                 if (buffer != null && buffer.size != 0) {
-                    Log.i("ScreenLive", "run: send -> ${buffer.size}")
-                    sendData(buffer, buffer.size, tms,0)
+//                    Log.i("ScreenLive", "run: send -> ${buffer.size}")
+                    sendData(buffer, buffer.size, tms, type)
                 }
             }
         }
