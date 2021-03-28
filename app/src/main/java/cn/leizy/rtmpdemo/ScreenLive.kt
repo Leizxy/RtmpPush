@@ -25,7 +25,7 @@ class ScreenLive : Thread() {
     fun startLive(url: String, mediaProjection: MediaProjection) {
         this.url = url
         this.mediaProjection = mediaProjection
-        start()
+        LiveManager.getInstance().execute(this)
     }
 
     fun addPackage(rtmpPackage: RTMPPackage) {

@@ -55,7 +55,7 @@ class VideoCodec(private val screenLive: ScreenLive) : Thread() {
         } catch (e: IOException) {
             e.printStackTrace()
         }
-        start()
+        LiveManager.getInstance().execute(this)
     }
 
     override fun run() {
