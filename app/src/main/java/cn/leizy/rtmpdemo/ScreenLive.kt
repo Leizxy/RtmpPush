@@ -49,17 +49,16 @@ class ScreenLive : Thread() {
                 e.printStackTrace()
             }
             rtmpPackage?.apply {
-
                 if (buffer != null && buffer.size != 0) {
                     Log.i("ScreenLive", "run: send -> ${buffer.size}")
-                    sendData(buffer, buffer.size, tms)
+                    sendData(buffer, buffer.size, tms,0)
                 }
             }
         }
 
     }
 
-    private external fun sendData(data: ByteArray, len: Int, tms: Long): Boolean
+    private external fun sendData(data: ByteArray, len: Int, tms: Long, type: Int): Boolean
 
     private external fun connect(url: String): Boolean
 }
