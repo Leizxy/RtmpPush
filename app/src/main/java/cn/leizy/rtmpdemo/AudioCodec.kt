@@ -49,6 +49,7 @@ class AudioCodec(private val screenLive: ScreenLive) : Thread() {
     override fun run() {
         isRecording = true
         val bufferInfo = MediaCodec.BufferInfo()
+        //告诉另外一段，准备好接收音频
         val audioDecoderSpecificInfo = byteArrayOf(0x12, 0x08)
         var rtmpPackage =
             RTMPPackage(audioDecoderSpecificInfo, type = RTMPPackage.RTMP_PACKET_TYPE_AUDIO_HEAD)

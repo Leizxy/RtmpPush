@@ -1,9 +1,7 @@
 package cn.leizy.rtmpdemo
 
 import android.util.TimeUtils
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.*
 
 /**
  * @author wulei
@@ -23,12 +21,17 @@ class LiveManager {
         val MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1
         val KEEP_ALIVE_SECONDS = 30L
         val sPoolWorkQueue = LinkedBlockingQueue<Runnable>(5)
-        private lateinit var THREAD_POOL_EXECUTOR: ThreadPoolExecutor
+        private var THREAD_POOL_EXECUTOR: ThreadPoolExecutor
 
         init {
             THREAD_POOL_EXECUTOR = ThreadPoolExecutor(
                 CORE_POOL_SIZE, MAXIMUM_POOL_SIZE,
-                KEEP_ALIVE_SECONDS, TimeUnit.SECONDS, sPoolWorkQueue
+                KEEP_ALIVE_SECONDS, TimeUnit.SECONDS, sPoolWorkQueue, ThreadFactory {
+                    val thread = Thread()
+                    thread.priority = Thread.NORM_PRIORITY
+                    thread.name = "rtmp_push_thread"
+                    thread
+                }
             )
         }
 

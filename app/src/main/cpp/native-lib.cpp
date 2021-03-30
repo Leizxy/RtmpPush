@@ -67,7 +67,6 @@ RTMPPacket *createVideoPackage(Live *live) {
     packet->m_body[i++] = 0x17;
     //AVC sequence header 设置为0x00
     packet->m_body[i++] = 0x00;
-    //CompositionTime
     packet->m_body[i++] = 0x00;
     packet->m_body[i++] = 0x00;
     packet->m_body[i++] = 0x00;
@@ -103,8 +102,10 @@ RTMPPacket *createVideoPackage(Live *live) {
 }
 
 RTMPPacket *createVideoPackage(jbyte *data, jint len, jlong tms, Live *live) {
+    //去掉分隔符
     data += 4;
     len -= 4;
+
     int body_size = len + 9;
     RTMPPacket *packet = static_cast<RTMPPacket *>(malloc(sizeof(RTMPPacket)));
     RTMPPacket_Alloc(packet, len + 9);
@@ -202,7 +203,6 @@ int sendVideo(jbyte *data, jint len, jlong tms) {
         if (data[4] == 0x65) {// I 帧
             RTMPPacket *packet = createVideoPackage(live);
             if (!(ret = sendPacket(packet))) {
-
             }
         }
         RTMPPacket *packet = createVideoPackage(data, len, tms, live);

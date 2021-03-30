@@ -52,12 +52,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun startLive(view: View) {
-        if (binding.url.text.toString().trim().isEmpty() || binding.code.text.toString().trim()
-                .isEmpty()
+        if (binding.url.text.toString().trim().isEmpty()
+            /*|| binding.code.text.toString().trim().isEmpty()*/
         ) return
         mediaProjectionManager =
             getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-        val intent = mediaProjectionManager.createScreenCaptureIntent();
+        val intent = mediaProjectionManager.createScreenCaptureIntent()
         startActivityForResult(intent, 100)
     }
 
